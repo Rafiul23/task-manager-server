@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -70,7 +70,38 @@ async function run() {
         res.send(result);
       })
 
+      app.put('/ongoingtask/:id', async(req, res)=>{
+        const id = req.params.id;
+        const filter = {_id: new ObjectId(id)};
+        const options = {upsert: true};
+        const updatedStatus = {
+          $set: {
+            status: 'ongoing'
+          }
+        }
+        const result = await taskCollection.updateOne(filter,updatedStatus, options);
+        res.send(result);
+      })
 
+      app.put('/finishedtask/:id', async(req, res)=>{
+        const id = req.params.id;
+        const filter = {_id: new ObjectId(id)};
+        const options = {upsert: true};
+        const updatedStatus = {
+          $set: {
+            status: 'finished'
+          }
+        }
+        const result = await taskCollection.updateOne(filter,updatedStatus, options);
+        res.send(result);
+      })
+
+      app.delete('/task/:id', async(req, res)=>{
+        const id = req.params.id;
+        const query = {_id: new ObjectId(id)};
+        const result = await taskCollection.deleteOne(query);
+        res.send(result);
+      })
 
 
   } finally {

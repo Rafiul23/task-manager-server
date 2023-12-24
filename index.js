@@ -32,6 +32,47 @@ async function run() {
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
+
+    const userCollection = client.db('taskDB').collection('users');
+    const taskCollection = client.db('taskDB').collection('tasks');
+
+    // user related api
+    app.post('/users', async (req, res) => {
+
+        const user = req.body;
+        const query = { email: user.email };
+        const isExist = await userCollection.findOne(query);
+        if (isExist) {
+          return res.send({ message: 'User already exists', insertedId: null });
+        }
+        const result = await userCollection.insertOne(user);
+        res.send(result);
+      })
+
+      app.get('/users/:email',  async (req, res) => {
+        const email = req.params.email;
+        const query = { email: email };
+        const result = await userCollection.findOne(query);
+        res.send(result);
+      })
+
+      // task related api
+      app.post('/task', async(req, res)=>{
+        const task = req.body;
+        const result = await taskCollection.insertOne(task);
+        res.send(result);
+      })
+
+      app.get('/tasks/:email', async(req, res)=>{
+        const email = req.params.email;
+        const query = {email: email};
+        const result = await taskCollection.find(query).toArray();
+        res.send(result);
+      })
+
+
+
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
